@@ -41,7 +41,7 @@ export default function Catalog() {
   const isNawras = store === 'nawras'
   const storeName = isNawras ? 'Nawras' : 'Kajjoun'
 
-  const addItem = useCartStore((state) => state.addItem)
+  // شلنا سطر addItem من هون عشان نصلح الخطأ
   const itemsCount = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0))
   
   useEffect(() => {
@@ -128,7 +128,6 @@ export default function Catalog() {
                   key={p.id} 
                   className="group cursor-pointer flex flex-col bg-white shadow-sm hover:shadow-2xl transition-all duration-500"
                 >
-                  {/* ضفنا Link عشان نودي لصفحة التفاصيل */}
                   <Link to={`/product/${p.id}`} className="block">
                     <div className="h-[350px] flex items-center justify-center relative overflow-hidden bg-[#f5f5f5]">
                        <img 
