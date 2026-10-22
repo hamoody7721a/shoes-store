@@ -9,7 +9,8 @@ interface Product {
   store: string
   colors: string
   description: string
-  material: string // ضفنا المادة هنا
+  material: string
+  category_id: number
 }
 
 export default function AdminProducts() {
@@ -22,7 +23,8 @@ export default function AdminProducts() {
   const [store, setStore] = useState('nawras')
   const [colors, setColors] = useState('')
   const [description, setDescription] = useState('')
-  const [material, setMaterial] = useState('leather') // حالة المادة (افتراضي جلد)
+  const [material, setMaterial] = useState('leather')
+  const [categoryId, setCategoryId] = useState('1') // حالة الفئة (افتراضي رجالي)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
 
@@ -66,8 +68,8 @@ export default function AdminProducts() {
         store,
         colors,
         description,
-        material, // حفظ المادة المختارة
-        category_id: 1,
+        material,
+        category_id: Number(categoryId), // نستخدم الفئة المختارة
         type_id: 1,
         image_url: imageUrl
       })
@@ -100,13 +102,28 @@ export default function AdminProducts() {
     }
   }
 
+  const getMaterialLabel = (mat: string) => {
+    if (mat === 'leather') return 'جلد'
+    if (mat === 'fabric') return 'قماش'
+    if (mat === 'mixed') return 'جلد وقماش'
+    return mat
+  }
+
+  // دالة عشان نعرف اسم الفئة من رقمها
+  const getCategoryLabel = (id: number) => {
+    if (id === 1) return 'رجالي'
+    if (id === 2) return 'نسائي / شبابي'
+    if (id === 3) return 'ولادي'
+    if (id === 4) return 'بيبي'
+    return 'غير محدد'
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">إدارة المنتجات</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* نموذج إضافة منتج */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
             <h2 className="text-xl font-bold mb-4">إضافة منتج جديد</h2>
             <form onSubmit={handleAddProduct} className="space-y-4">
@@ -125,12 +142,23 @@ export default function AdminProducts() {
                 <input type="number" value={pieces} onChange={e => setPieces(e.target.value)} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
 
-              {/* قائمة اختيار المادة */}
+              {/* حقل التصنيف الجديد */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">الفئة</label>
+                <select value={categoryId} onChange={e => setCategoryId(e.target.value)} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                  <option value="1">رجالي</option>
+                  <option value="2">نسائي / شبابي</option>
+                  <option value="3">ولادي</option>
+                  <option value="4">بيبي</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">المادة</label>
                 <select value={material} onChange={e => setMaterial(e.target.value)} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                   <option value="leather">جلد (Leather)</option>
                   <option value="fabric">قماش (Fabric)</option>
+                  <option value="mixed">جلد وقماش (Mixed)</option>
                 </select>
               </div>
 
@@ -163,28 +191,25 @@ export default function AdminProducts() {
             </form>
           </div>
 
-          {/* جدول المنتجات */}
           <div className="md:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <table className="w-full text-right">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="p-4 font-bold text-gray-600">اسم المنتج</th>
+                  <th className="p-4 font-bold text-gray-600">الفئة</th>
                   <th className="p-4 font-bold text-gray-600">المادة</th>
-                  <th className="p-4 font-bold text-gray-600">الوصف</th>
-                  <th className="p-4 font-bold text-gray-600">الألوان</th>
                   <th className="p-4 font-bold text-gray-600">السعر</th>
                   <th className="p-4 font-bold text-gray-600">إجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
-                  <tr><td colSpan={6} className="p-8 text-center text-gray-500">جاري التحميل...</td></tr>
+                  <tr><td colSpan={5} className="p-8 text-center text-gray-500">جاري التحميل...</td></tr>
                 ) : products.map(p => (
                   <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                     <td className="p-4 font-medium">{p.name}</td>
-                    <td className="p-4 text-sm font-bold text-gray-700">{p.material === 'leather' ? 'جلد' : 'قماش'}</td>
-                    <td className="p-4 text-sm text-gray-500 truncate max-w-[150px]">{p.description || 'لا يوجد وصف'}</td>
-                    <td className="p-4 text-sm text-gray-500">{p.colors || 'غير محدد'}</td>
+                    <td className="p-4 text-sm font-bold text-blue-600">{getCategoryLabel(p.category_id)}</td>
+                    <td className="p-4 text-sm text-gray-700">{getMaterialLabel(p.material)}</td>
                     <td className="p-4 text-green-600 font-bold">{p.carton_price?.toLocaleString()} ل.س</td>
                     <td className="p-4">
                       <button onClick={() => handleDelete(p.id, p.name)} className="text-red-500 hover:text-red-700 font-bold text-sm bg-red-50 px-3 py-1 rounded-lg transition-colors">
